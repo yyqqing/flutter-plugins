@@ -87,6 +87,26 @@ class VolumeMessage {
   }
 }
 
+class SpeedMessage {
+  int textureId;
+  double speed;
+  // ignore: unused_element
+  Map<dynamic, dynamic> _toMap() {
+    final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
+    pigeonMap['textureId'] = textureId;
+    pigeonMap['speed'] = speed;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static SpeedMessage _fromMap(Map<dynamic, dynamic> pigeonMap) {
+    final SpeedMessage result = SpeedMessage();
+    result.textureId = pigeonMap['textureId'];
+    result.speed = pigeonMap['speed'];
+    return result;
+  }
+}
+
 class PositionMessage {
   int textureId;
   int position;
@@ -302,6 +322,28 @@ class VideoPlayerApi {
     final Map<dynamic, dynamic> requestMap = arg._toMap();
     const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
         'dev.flutter.pigeon.VideoPlayerApi.setVolume', StandardMessageCodec());
+
+    final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
+    if (replyMap == null) {
+      throw PlatformException(
+          code: 'channel-error',
+          message: 'Unable to establish connection on channel.',
+          details: null);
+    } else if (replyMap['error'] != null) {
+      final Map<dynamic, dynamic> error = replyMap['error'];
+      throw PlatformException(
+          code: error['code'],
+          message: error['message'],
+          details: error['details']);
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> setSpeed(SpeedMessage arg) async {
+    final Map<dynamic, dynamic> requestMap = arg._toMap();
+    const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+        'dev.flutter.pigeon.VideoPlayerApi.setSpeed', StandardMessageCodec());
 
     final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
     if (replyMap == null) {

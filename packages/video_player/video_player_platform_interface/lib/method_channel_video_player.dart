@@ -72,6 +72,13 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<void> setSpeed(int textureId, double speed) {
+    return _api.setSpeed(SpeedMessage()
+      ..textureId = textureId
+      ..speed = speed);
+  }
+
+  @override
   Future<void> seekTo(int textureId, Duration position) {
     return _api.seekTo(PositionMessage()
       ..textureId = textureId
