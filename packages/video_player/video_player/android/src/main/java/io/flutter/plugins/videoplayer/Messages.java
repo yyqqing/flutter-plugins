@@ -275,6 +275,8 @@ public class Messages {
 
     void setVolume(VolumeMessage arg);
 
+    void setSpeed(SpeedMessage arg);
+
     void play(TextureMessage arg);
 
     PositionMessage position(TextureMessage arg);
