@@ -37,6 +37,7 @@ class VideoPlayerValue {
     this.isLooping = false,
     this.isBuffering = false,
     this.volume = 1.0,
+    this.speed = 1.0,
     this.errorDescription,
   });
 
@@ -76,6 +77,9 @@ class VideoPlayerValue {
 
   /// The current volume of the playback.
   final double volume;
+
+  ///The Current speed of the playback.
+  final double speed;
 
   /// A description of the error if present.
   ///
@@ -119,6 +123,7 @@ class VideoPlayerValue {
     bool isLooping,
     bool isBuffering,
     double volume,
+    double speed,
     String errorDescription,
   }) {
     return VideoPlayerValue(
@@ -131,6 +136,7 @@ class VideoPlayerValue {
       isLooping: isLooping ?? this.isLooping,
       isBuffering: isBuffering ?? this.isBuffering,
       volume: volume ?? this.volume,
+      speed: speed ?? this.speed,
       errorDescription: errorDescription ?? this.errorDescription,
     );
   }
@@ -147,6 +153,7 @@ class VideoPlayerValue {
         'isLooping: $isLooping, '
         'isBuffering: $isBuffering'
         'volume: $volume, '
+        'speed: $speed, '
         'errorDescription: $errorDescription)';
   }
 }
@@ -280,6 +287,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           initializingCompleter.complete(null);
           _applyLooping();
           _applyVolume();
+          _applySpeed();
           _applyPlayPause();
           break;
         case VideoEventType.completed:
@@ -400,6 +408,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.setVolume(_textureId, value.volume);
   }
 
+  Future<void> _applySpeed() async {
+    if (!value.initialized || _isDisposed) {
+      return;
+    }
+    await _videoPlayerPlatform.setSpeed(_textureId, value.speed);
+  }
+
   /// The position in the current video.
   Future<Duration> get position async {
     if (_isDisposed) {
@@ -433,6 +448,18 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Future<void> setVolume(double volume) async {
     value = value.copyWith(volume: volume.clamp(0.0, 1.0));
     await _applyVolume();
+  }
+
+  /// Sets the playback speed of [this].
+  ///
+  /// [speed] can be 0.5x, 1x, 2x
+  /// by default speed value is 1.0
+  ///
+  /// Negative speeds are not supported
+  /// speeds above 2x are not supported on iOS
+  Future<void> setSpeed(double speed) async {
+    value = value.copyWith(speed: speed);
+    await _applySpeed();
   }
 
   /// The closed caption based on the current [position] in the video.

@@ -14,6 +14,11 @@ class VolumeMessage {
   double volume;
 }
 
+class SpeedMessage {
+  int textureId;
+  double speed;
+}
+
 class PositionMessage {
   int textureId;
   int position;
@@ -33,6 +38,7 @@ abstract class VideoPlayerApi {
   void dispose(TextureMessage msg);
   void setLooping(LoopingMessage msg);
   void setVolume(VolumeMessage msg);
+  void setSpeed(SpeedMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
   void seekTo(PositionMessage msg);

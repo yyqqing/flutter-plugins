@@ -181,6 +181,46 @@ public class Messages {
   }
 
   /** Generated class from Pigeon that represents data sent in messages. */
+  public static class SpeedMessage {
+    private Long textureId;
+
+    public Long getTextureId() {
+      return textureId;
+    }
+
+    public void setTextureId(Long setterArg) {
+      this.textureId = setterArg;
+    }
+
+    private Double speed;
+
+    public Double getSpeed() {
+      return speed;
+    }
+
+    public void setSpeed(Double setterArg) {
+      this.speed = setterArg;
+    }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<String, Object>();
+      toMapResult.put("textureId", textureId);
+      toMapResult.put("speed", speed);
+      return toMapResult;
+    }
+
+    static SpeedMessage fromMap(HashMap map) {
+      SpeedMessage fromMapResult = new SpeedMessage();
+      fromMapResult.textureId =
+          (map.get("textureId") instanceof Integer)
+              ? (Integer) map.get("textureId")
+              : (Long) map.get("textureId");
+      fromMapResult.speed = (Double) map.get("speed");
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
   public static class PositionMessage {
     private Long textureId;
 
