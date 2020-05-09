@@ -245,6 +245,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     this.description,
     this.resolutionPreset, {
     this.enableAudio = true,
+    this.flashOn = false,
   }) : super(const CameraValue.uninitialized());
 
   final CameraDescription description;
@@ -252,6 +253,8 @@ class CameraController extends ValueNotifier<CameraValue> {
 
   /// Whether to include audio when recording a video.
   final bool enableAudio;
+  // Whether to open flash when recording a video.
+  final bool flashOn;
 
   int _textureId;
   bool _isDisposed = false;
@@ -275,6 +278,7 @@ class CameraController extends ValueNotifier<CameraValue> {
           'cameraName': description.name,
           'resolutionPreset': serializeResolutionPreset(resolutionPreset),
           'enableAudio': enableAudio,
+          'flashOn': flashOn,
         },
       );
       _textureId = reply['textureId'];
