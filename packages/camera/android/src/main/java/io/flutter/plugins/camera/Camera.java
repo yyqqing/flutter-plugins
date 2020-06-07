@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -50,6 +51,9 @@ public class Camera {
   private final Size previewSize;
   private final boolean enableAudio;
   private final boolean flashOn;
+
+  private float maximumZoomLevel;
+  private Rect sensorRect;
 
   private CameraDevice cameraDevice;
   private CameraCaptureSession cameraCaptureSession;
@@ -109,6 +113,12 @@ public class Camera {
         characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
     //noinspection ConstantConditions
     sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+    try {
+      maximumZoomLevel = characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+    } catch (NullPointerException ex) {
+    }
+
     //noinspection ConstantConditions
     isFrontFacing =
         characteristics.get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_FRONT;
@@ -170,6 +180,7 @@ public class Camera {
             reply.put("textureId", flutterTexture.id());
             reply.put("previewWidth", previewSize.getWidth());
             reply.put("previewHeight", previewSize.getHeight());
+            reply.put("maxScale", maximumZoomLevel);
             result.success(reply);
           }
 
@@ -252,6 +263,9 @@ public class Camera {
           cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
       captureBuilder.addTarget(pictureImageReader.getSurface());
       captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getMediaOrientation());
+      if (sensorRect  != null) {
+        captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, sensorRect);
+      }
 
       cameraCaptureSession.capture(
           captureBuilder.build(),
@@ -278,6 +292,31 @@ public class Camera {
           null);
     } catch (CameraAccessException e) {
       result.error("cameraAccess", e.getMessage(), null);
+    }
+  }
+
+  public void scale(Double scale, @NonNull final Result result) {
+    try {
+      CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraName);
+      Rect rect = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+      if (rect == null) {
+        result.success(false);
+      } else {
+        float ratio = (float) 1 / scale.floatValue(); //This ratio is the ratio of cropped Rect to Camera's original(Maximum) Rect
+        //croppedWidth and croppedHeight are the pixels cropped away, not pixels after cropped
+        int croppedWidth = rect.width() - Math.round((float)rect.width() * ratio);
+        int croppedHeight = rect.height() - Math.round((float)rect.height() * ratio);
+        //Finally, zoom represents the zoomed visible area
+        sensorRect = new Rect(croppedWidth/2, croppedHeight/2,
+                rect.width() - croppedWidth/2, rect.height() - croppedHeight/2);
+        captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, sensorRect);
+
+        cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+
+        result.success(true);
+      }
+    } catch (CameraAccessException e) {
+      result.error("1001", e.getMessage(), e);
     }
   }
 
@@ -324,6 +363,9 @@ public class Camera {
               captureRequestBuilder.set(
                   CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
               captureRequestBuilder.set(CaptureRequest.FLASH_MODE, flashOn ? CameraMetadata.FLASH_MODE_TORCH : CameraMetadata.FLASH_MODE_OFF);
+              if (sensorRect  != null) {
+                captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, sensorRect);
+              }
               cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
               if (onSuccessCallback != null) {
                 onSuccessCallback.run();

@@ -123,6 +123,10 @@ final class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
           }
           break;
         }
+      case "scale": {
+        camera.scale(call.argument("scale"), result);
+        break;
+      }
       case "dispose":
         {
           if (camera != null) {

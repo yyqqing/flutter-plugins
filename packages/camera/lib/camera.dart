@@ -159,6 +159,8 @@ class CameraValue {
     this.isTakingPicture,
     this.isStreamingImages,
     bool isRecordingPaused,
+    this.maxScale,
+    this.scale,
   }) : _isRecordingPaused = isRecordingPaused;
 
   const CameraValue.uninitialized()
@@ -194,6 +196,9 @@ class CameraValue {
   /// Is `null` until  [isInitialized] is `true`.
   final Size previewSize;
 
+  final double maxScale;
+  final double scale;
+
   /// Convenience getter for `previewSize.height / previewSize.width`.
   ///
   /// Can only be called when [initialize] is done.
@@ -209,6 +214,8 @@ class CameraValue {
     String errorDescription,
     Size previewSize,
     bool isRecordingPaused,
+    double maxScale,
+    double scale,
   }) {
     return CameraValue(
       isInitialized: isInitialized ?? this.isInitialized,
@@ -218,6 +225,8 @@ class CameraValue {
       isTakingPicture: isTakingPicture ?? this.isTakingPicture,
       isStreamingImages: isStreamingImages ?? this.isStreamingImages,
       isRecordingPaused: isRecordingPaused ?? _isRecordingPaused,
+      maxScale: maxScale ?? this.maxScale,
+      scale: scale ?? this.scale,
     );
   }
 
@@ -229,6 +238,8 @@ class CameraValue {
         'isInitialized: $isInitialized, '
         'errorDescription: $errorDescription, '
         'previewSize: $previewSize, '
+        'maxScale: $maxScale, '
+        'scale: $scale, '
         'isStreamingImages: $isStreamingImages)';
   }
 }
@@ -288,6 +299,8 @@ class CameraController extends ValueNotifier<CameraValue> {
           reply['previewWidth'].toDouble(),
           reply['previewHeight'].toDouble(),
         ),
+        maxScale: reply['maxScale'].toDouble(),
+        scale: 1,
       );
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
@@ -588,6 +601,28 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{'textureId': _textureId},
       );
       await _eventSubscription?.cancel();
+    }
+  }
+
+  Future<void> scale(double scale) async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'startVideoRecording was called on uninitialized CameraController',
+      );
+    }
+    try {
+      final bool reply = await _channel.invokeMethod<bool>(
+        'scale',
+        <String, dynamic>{'scale': scale},
+      );
+      if (reply != null) {
+        value = value.copyWith(scale: scale);
+      } else {
+        value = value.copyWith();
+      }
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
     }
   }
 }
