@@ -84,7 +84,7 @@ final class CameraPermissions {
       }
 
       alreadyCalled = true;
-      if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+      if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
         callback.onResult("cameraPermission", "MediaRecorderCamera permission not granted");
       } else if (grantResults.length > 1 && grantResults[1] != PackageManager.PERMISSION_GRANTED) {
         callback.onResult("cameraPermission", "MediaRecorderAudio permission not granted");
