@@ -523,6 +523,11 @@ public class Camera {
 
   private void closeCaptureSession() {
     if (cameraCaptureSession != null) {
+      try {
+        cameraCaptureSession.stopRepeating();
+      } catch (CameraAccessException e) {
+        e.printStackTrace();
+      }
       cameraCaptureSession.close();
       cameraCaptureSession = null;
     }
