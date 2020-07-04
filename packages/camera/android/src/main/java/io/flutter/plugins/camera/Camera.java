@@ -419,7 +419,7 @@ public class Camera {
         Camera.this.cameraCaptureSession.stopRepeating();
         Camera.this.cameraCaptureSession.abortCaptures();
       } catch (CameraAccessException e) {
-        result.error("cameraException", e.getMessage(), null);
+        // result.error("cameraException", e.getMessage(), null);
       }
 
       mediaRecorder.stop();
